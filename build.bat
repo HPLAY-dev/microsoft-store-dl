@@ -1,0 +1,1 @@
+nuitka --mingw64 --standalone --enable-plugin=pyside6,upx --upx-binary=".\upx\upx.exe" --assume-yes-for-downloads --output-dir=build --show-progress --show-memory --jobs=4 main.py

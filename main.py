@@ -1,3 +1,4 @@
+from shutil import rmtree
 import sys
 import os
 from PySide6.QtWidgets import (
@@ -239,12 +240,15 @@ class Browser(QMainWindow):
             print(f"下载完成")
             self.download_widget.complete_download(True)
             
+            filename = download.downloadFileName().lower()
             QMessageBox.information(
                 self, "下载完成",
-                f"下载完成\n保存位置: {download.downloadFileName()}"
+                f"下载完成\n保存位置: {filename}"
             )
-
-            install_msix(os.path.join(app_path(),'downloads', download.downloadFileName()))
+            if filename.endswith('.msix') or filename.endswith('.msixbundle'):
+                install_msix(os.path.join(app_path(),'downloads', filename))
+            else:
+                os.system('start '+os.path.join(app_path(),'downloads', filename))
             
         elif state == QWebEngineDownloadRequest.DownloadCancelled:
             print(f"下载取消: {filename}")
@@ -309,7 +313,7 @@ class Browser(QMainWindow):
         self.navbar.addWidget(self.url_bar)
         
         # 下载按钮
-        download_btn = QAction("↓", self)
+        download_btn = QAction("↓下载", self)
         download_btn.setToolTip("解析当前页面并下载")
         download_btn.triggered.connect(self.download_app)
         self.navbar.addAction(download_btn)
@@ -364,6 +368,7 @@ class Browser(QMainWindow):
     def closeEvent(self, event):
         """窗口关闭事件"""
         # 如果有正在进行的下载，询问用户
+        rmtree('downloads')
         if self.download_widget.is_active:
             reply = QMessageBox.question(
                 self, "正在下载",
